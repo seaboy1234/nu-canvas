@@ -70,24 +70,20 @@ def build-url [
 }
 
 export def paginated-fetch [path, params? = {}] {
-  let query = (
-    $params
-    | upsert per_page 100
-  )
-
   1..
-  | each {|page|
+  | each {|page| 
     let query = (
-      $query
+      $params
+      | upsert per_page 100
       | insert page $page
       | to query
     )
-    build-url $env.CANVAS_URL $path $query
+    let url = build-url $env.CANVAS_URL $path $query
+    get-url $url
   }
-  | each {|url| get-url $url}
   | take while {|it| ($it.body | length) > 0 and $it.status.code in 200..299}
-  | select body
-  | flatten body --all
+  | each {|it| $it.body}
+  | flatten --all
 }
 
 export def fetch [path, params? = {}] {
