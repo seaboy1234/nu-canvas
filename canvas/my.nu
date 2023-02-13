@@ -1,7 +1,7 @@
 export def accounts [
   --as-user(-u): any
 ] {
-  paginated-fetch $"/managable_accounts" {as_user_id: (id-of $as_user)}
+  paginated-fetch $"/manageable_accounts" {as_user_id: (id-of $as_user)}
 }
 
 export def course-accounts [
