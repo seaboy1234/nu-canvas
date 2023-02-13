@@ -11,7 +11,7 @@ def subaccounts-impl [account, --recursive(-r) = false] {
 export def subaccounts [account?, --recursive(-r)] {
   $in
   | default $account
-  | default 1
+  | default $env.CANVAS_ROOT_ACCOUNT_ID
   | each { paginated-fetch $"/accounts/(id-of $in)/sub_accounts" {recursive: $recursive} }
   | maybe-flatten
 }
@@ -19,6 +19,7 @@ export def subaccounts [account?, --recursive(-r)] {
 export def get [account?] {
   $in
   | default $account
+  | default $env.CANVAS_ROOT_ACCOUNT_ID
   | each { fetch $"/accounts/(id-of $in)" }
   | maybe-flatten
 }
@@ -26,6 +27,7 @@ export def get [account?] {
 export def "get help-links" [account?] {
   $in
   | default $account
+  | default $env.CANVAS_ROOT_ACCOUNT_ID
   | each {fetch $"/accounts/(id-of $in)/help_links"}
   | maybe-flatten
 }
@@ -56,7 +58,7 @@ export def courses [
   let accounts = (
     $in
     | default $account
-    | default 2
+    | default $env.CANVAS_ROOT_ACCOUNT_ID
   )
 
   let params = {

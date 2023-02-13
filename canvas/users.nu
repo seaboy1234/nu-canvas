@@ -24,7 +24,7 @@ export def list [
 ] {
   $in
   | default $account
-  | default 2
+  | default $env.CANVAS_ROOT_ACCOUNT_ID
   | each {
     paginated-fetch $"/accounts/(id-of $in)/users"
     | update created_at {|it| $it.created_at | try { into datetime }}

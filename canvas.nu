@@ -8,6 +8,9 @@ export-env {
     error make {msg: "CANVAS_TOKEN not set"}
     exit 1
   }
+  if not "CANVAS_ROOT_ACCOUNT_ID" in $env {
+    let-env CANVAS_ROOT_ACCOUNT_ID = 1
+  }
 }
 
 use canvas/util.nu *
