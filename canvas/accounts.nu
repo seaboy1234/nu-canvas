@@ -4,10 +4,6 @@ export def list [
   paginated-fetch $"/accounts" {include: $include}
 }
 
-def subaccounts-impl [account, --recursive(-r) = false] {
-
-}
-
 export def subaccounts [account?, --recursive(-r)] {
   $in
   | default $account
