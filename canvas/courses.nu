@@ -17,6 +17,30 @@ export def get [
   | update start_at {|it| $it.start_at | try { into datetime }}
 }
 
+export def "get section" [
+  section_id?
+  --include(-i) # Additional fields to include in the query. Allowed values: students, avatar_url, enrollments, total_students, passback_status, permissions
+] {
+  $in
+  | default $section_id
+  | each {
+    fetch $"/sections/($in)"
+  }
+  | maybe-flatten
+  | into datetime start_at end_at
+}
+
+export def "list sections" [
+  course?
+  --include(-i) # Additional fields to include in the query. Allowed values: students, avatar_url, enrollments, total_students, passback_status, permissions
+] {
+  $in
+  | default $course
+  | each { paginated-fetch $"/courses/(id-of $in)/sections" {include: $include}}
+  | maybe-flatten
+  | into datetime start_at end_at
+}
+
 # Fetch assignments for a course.
 export def assignments [
   course? #
