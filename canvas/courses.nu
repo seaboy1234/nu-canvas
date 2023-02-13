@@ -58,10 +58,6 @@ export def assignments [
       bucket: $bucket
       sort_by: $sort
     }
-    | update created_at {|it| $it.created_at | try {into datetime}}
-    | update updated_at {|it| $it.updated_at | try {into datetime}}
-    | update due_at {|it| $it.due_at | try {into datetime}}
-    | update lock_at {|it| $it.lock_at | try {into datetime}}
-    | update unlock_at {|it| $it.unlock_at | try {into datetime}}
+    | into datetime created_at updated_at due_at lock_at unlock_at
   }
 }
