@@ -1,4 +1,4 @@
-export def update [
+export def edit [
   user?
   --override-sis(-o)
 ] {
@@ -25,7 +25,10 @@ export def list [
   $in
   | default $account
   | default 2
-  | each {|it| paginated-fetch $"/accounts/(id-of $it)/users" | cast created_at datetime}
+  | each {
+    paginated-fetch $"/accounts/(id-of $in)/users"
+    | update created_at {|it| $it.created_at | try { into datetime }}
+  }
 }
 
 export def missing-submissions [
@@ -52,7 +55,7 @@ export def get [
   | default self
   | each {
     fetch $"/users/(id-of $in)/"
-    | cast created_at datetime
+    | update created_at {|it| $it.created_at | try { into datetime }}
   }
   | maybe-flatten
 }

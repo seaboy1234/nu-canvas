@@ -80,11 +80,10 @@ export def courses [
   }
 
   $accounts
-  | each {
-    paginated-fetch $"/accounts/(id-of $in)/courses" $params
-    | cast created_at datetime
-    | cast end_at datetime
-    | cast start_at datetime
+  | each { 
+    paginated-fetch $"/accounts/(id-of $in)/courses" $params 
+    | update created_at {|it| $it.created_at | try { into datetime }}
+    | update end_at {|it| $it.created_at | try { into datetime }}
+    | update start_at {|it| $it.created_at | try { into datetime }}
   }
-  | maybe-flatten
 }

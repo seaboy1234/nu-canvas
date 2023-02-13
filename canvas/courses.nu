@@ -12,9 +12,9 @@ export def get [
     # teacher_count key.
 ] {
   fetch $"/courses/($course_id)" {include: $include, teacher_limit: $max_teachers}
-  | cast created_at datetime
-  | cast end_at datetime
-  | cast start_at datetime
+  | update created_at {|it| $it.created_at | try { into datetime }}
+  | update end_at {|it| $it.end_at | try { into datetime }}
+  | update start_at {|it| $it.start_at | try { into datetime }}
 }
 
 # Fetch assignments for a course.
@@ -34,10 +34,10 @@ export def assignments [
       bucket: $bucket
       sort_by: $sort
     }
-    | cast created_at datetime
-    | cast updated_at datetime
-    | cast due_at datetime
-    | cast lock_at datetime
-    | cast unlock_at datetime
+    | update created_at {|it| $it.created_at | try {into datetime}}
+    | update updated_at {|it| $it.updated_at | try {into datetime}}
+    | update due_at {|it| $it.due_at | try {into datetime}}
+    | update lock_at {|it| $it.lock_at | try {into datetime}}
+    | update unlock_at {|it| $it.unlock_at | try {into datetime}}
   }
 }

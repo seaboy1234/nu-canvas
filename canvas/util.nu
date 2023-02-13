@@ -45,14 +45,6 @@ def dynamic-into [
   }
 }
 
-export def cast [
-  column
-  type
-] {
-  $in
-  | each { $in | update $column {|it| if ($it | get $column -i) != null {$it | get $column | dynamic-into $type}}}
-}
-
 export def maybe-flatten [] {
   if ($in | describe | str starts-with "record") {
     $in
