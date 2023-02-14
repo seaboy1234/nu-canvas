@@ -20,7 +20,7 @@ export def main [account?] {
   | maybe-flatten
 }
 
-export def "get help-links" [account?] {
+export def help-links [account?] {
   $in
   | default $account
   | default $env.CANVAS_ROOT_ACCOUNT_ID
