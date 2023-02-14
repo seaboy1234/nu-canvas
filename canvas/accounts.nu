@@ -20,6 +20,10 @@ export def main [account?] {
   | maybe-flatten
 }
 
+export def sandbox [] {
+  fetch $"/manually_created_courses_account"
+}
+
 export def help-links [account?] {
   $in
   | default $account
