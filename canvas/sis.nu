@@ -1,13 +1,13 @@
 export def course [
     sis_id: string
 ] {
-    courses get $"sis_course_id:($sis_id)"
+    courses $"sis_course_id:($sis_id)"
 }
 
 export def user [
     sis_id: string
 ] {
-    users get $"sis_user_id:($sis_id)"
+    users $"sis_user_id:($sis_id)"
 }
 
 # export def term [
@@ -19,7 +19,7 @@ export def user [
 export def section [
     sis_id: string
 ] {
-    courses get section $"sis_section_id:($sis_id)"
+    courses section $"sis_section_id:($sis_id)"
 }
 
 # Returns the list of SIS imports for an account.

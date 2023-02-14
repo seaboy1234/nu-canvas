@@ -1,4 +1,4 @@
-export def get [
+export def main [
   course_id
     # The id of the course to fetch. Accepts SIS ids when prefixed with sis_course_id:
   --include(-i): list
@@ -17,7 +17,7 @@ export def get [
   | update start_at {|it| $it.start_at | try { into datetime }}
 }
 
-export def "get section" [
+export def section [
   section_id?
   --include(-i) # Additional fields to include in the query. Allowed values: students, avatar_url, enrollments, total_students, passback_status, permissions
 ] {

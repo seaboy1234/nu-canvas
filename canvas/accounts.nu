@@ -12,7 +12,7 @@ export def subaccounts [account?, --recursive(-r)] {
   | maybe-flatten
 }
 
-export def get [account?] {
+export def main [account?] {
   $in
   | default $account
   | default $env.CANVAS_ROOT_ACCOUNT_ID
