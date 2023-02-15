@@ -58,7 +58,11 @@ export def assignments [
       bucket: $bucket
       sort_by: $sort
     }
-    | into datetime created_at updated_at due_at lock_at unlock_at
+    | each {|it| try {into datetime created_at} catch {$it} } # These fields can be null, but `into datetime` throws on null
+    | each {|it| try {into datetime updated_at} catch {$it} }
+    | each {|it| try {into datetime due_at} catch {$it} } 
+    | each {|it| try {into datetime lock_at} catch {$it} } 
+    | each {|it| try {into datetime unlock_at} catch {$it} } 
   }
 }
 
