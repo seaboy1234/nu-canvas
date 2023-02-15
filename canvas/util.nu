@@ -17,3 +17,21 @@ export def id-of [thing] {
 
   $thing
 }
+
+# Reject columns if they exist in the table. 
+# This is a wrapper around `reject` because it
+# doesn't allow rejecting columns that aren't
+# in the table already.
+export def maybe-reject [
+  ...columns
+] {
+  let pipe = $in
+  let cols_to_remove = (
+    $pipe 
+    | columns
+    | where {|it| $it in $columns}
+  )
+
+  $cols_to_remove
+  | reduce -f $pipe {|it, acc| $acc | reject $it}
+}

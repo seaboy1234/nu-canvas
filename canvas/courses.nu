@@ -109,3 +109,84 @@ export def "tabs toggle" [
   }
 }
 
+# Create one or more new courses
+# 
+# See https://canvas.instructure.com/doc/api/courses.html#method.courses.create
+# Top-level options are 
+export def create [
+  attrs?: table
+  --account(-a): any
+  --offer(-o)
+  --enroll-me(-e)
+  --reactivate(-r)
+] {
+  $in
+  | default $attrs
+  | each {|it|
+    let offer = (
+      $it
+      | get offer -i
+      | default $offer
+    )
+    
+    let enroll_me = (
+      $it
+      | get enroll_me -i
+      | default $enroll_me
+    )
+
+    let reactivate = (
+      $it
+      | get reactivate -i
+      | default $reactivate
+    )
+
+    let account = (
+      $it
+      | get account -i
+      | default $account
+      | default (accounts sandbox)
+    )
+
+    let template = (
+      $it 
+      | get template -i
+      | do {|it| 
+        try { $it | into int } catch {$it}
+      } $in
+    )
+
+    let options = {
+      course: (
+        $it
+        | maybe-reject offer enroll_me reactivate account template
+        | default "Unnamed Course" name
+      )
+      offer: $offer
+      enroll_me: $enroll_me
+      enable_sis_reactivation: $reactivate
+    }
+
+    print $"Creating ($it.name)"
+
+    let course = post $"/accounts/(id-of $account)/courses" $options
+
+    if $template != null {
+      # TODO: move this logic to a `content-migrations` module
+      let migration = {
+        migration_type: course_copy
+        settings: {
+          source_course_id: (id-of $template)
+        }
+      }
+
+      let template_course = main (id-of $template)
+
+      print $"Copying ($template_course.name) to ($course.name)"
+
+      post $"/courses/(id-of $course)/content_migrations" $migration
+    }
+
+    $course
+  }
+}
