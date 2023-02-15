@@ -4,7 +4,7 @@ def enrollments-impl [
 ] {
   mut resource = ""
 
-  if ($thing | describe | str contains "record") {
+  if ($thing | describe | str starts-with "record") {
     if ($thing | columns | any {|it| $it == "course_code"}) {
       $resource = "courses"
     }
@@ -21,7 +21,7 @@ def enrollments-impl [
   if $resource == "" {
     let span = (metadata $thing).span;
     error make {
-      msg: "cannot get this thing's enrollments",
+      msg: $"cannot get this thing's enrollments: ($thing)",
       label: {
           text: "must be a course id or a course, section, or user record",
           start: $span.start,
@@ -49,7 +49,7 @@ export def list [
 ] {
   $in
   | default $thing
-  | each{|it|
+  | each {|it|
     enrollments-impl $it {
       role: $role
       state: $state
