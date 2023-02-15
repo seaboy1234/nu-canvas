@@ -67,10 +67,10 @@ export def tabs [
 ] {
   $in
   | default $course
-  | each {|it| 
-    fetch $"/courses/(id-of $course)/tabs"
+  | each {|it|
+    fetch $"/courses/(id-of $it)/tabs"
     | default false hidden
-    | insert course_id (id-of $course)
+    | insert course_id (id-of $it)
   }
 }
 
