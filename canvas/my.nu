@@ -19,5 +19,5 @@ export def user [
 export def courses [
   --as-user(-u): any = self
 ] {
-  fetch $"/users/(id-of $as_user)/courses"
+  paginated-fetch $"/users/(id-of $as_user)/courses"
 }
