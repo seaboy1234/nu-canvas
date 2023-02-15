@@ -58,7 +58,7 @@ export def get [
   | default self
   | each {
     fetch $"/users/(id-of $in)/"
-    | update created_at {|it| $it.created_at | try { into datetime }}
+    | each {|it| try {into datetime created_at} catch {$it} }
   }
   | maybe-flatten
 }
