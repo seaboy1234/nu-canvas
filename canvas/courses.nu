@@ -61,3 +61,51 @@ export def assignments [
     | into datetime created_at updated_at due_at lock_at unlock_at
   }
 }
+
+export def tabs [
+  course?
+] {
+  $in
+  | default $course
+  | each {|it| 
+    fetch $"/courses/(id-of $course)/tabs"
+    | default false hidden
+    | insert course_id (id-of $course)
+  }
+}
+
+export def "tabs update" [
+  tab?
+  --course(-c)
+] {
+  $in
+  | default $tab
+  | each {|it|
+    let course = (
+      $it
+      | default $course course_id
+      | get course_id
+    )
+    let attrs = (
+      $it
+      | select position hidden -i
+    )
+    put $"/courses/(id-of $course)/tabs/(id-of $it)" $attrs
+  }
+}
+
+export def "tabs toggle" [
+  predicate: closure
+] {
+  $in
+  | each {|course|
+    tabs $course
+    | where {|it| (do $predicate $it) == true}
+    | each {|it|
+      $it
+      | update hidden {|it| not $it.hidden}
+      | tabs update
+    }
+  }
+}
+
