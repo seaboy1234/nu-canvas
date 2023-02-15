@@ -21,12 +21,15 @@ export def edit [
 
 export def list [
   account?
+  --search(-s): string
+  --sort: string
+  --order: string
 ] {
   $in
   | default $account
   | default $env.CANVAS_ROOT_ACCOUNT_ID
   | each {
-    paginated-fetch $"/accounts/(id-of $in)/users"
+    paginated-fetch $"/accounts/(id-of $in)/users" {search_term: $search, sort: $sort, order: $order}
     | update created_at {|it| $it.created_at | try { into datetime }}
   }
 }
