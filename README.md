@@ -81,13 +81,13 @@ the script is working correctly.
 
 ## Philosophy
 Managing multiple Canvas LMS instances can be time-consuming, especially when it comes to tasks that involve
-bulk operations, such as adding users or courses. There has been
+bulk operations, such as adding users or courses. While there has been
 [some](https://community.canvaslms.com/t5/Canvas-Developers-Group/CANBASH-Canvas-BASH-Scripting/ba-p/268228) limited
 effort to develop shell scripts that interact with the Canvas API, there is a lack of comprehensive command-line tools
 to manage Canvas LMS instances. For anyone familiar with other excellent tools, such as
 [gam](https://github.com/GAM-team/GAM), this toolbox aims to provide a similar level of comfort and flexibility.
 
-The main goal of nu-canvas is to provide a simple and efficient way to perform common, low-level Canvas LMS management
+The main goal of the toolbox is to provide a simple and efficient way to perform common, low-level Canvas LMS management
 tasks, such as creating and deleting courses, managing users and groups, and performing course enrollment operations. By
 using the shell, admins can quickly and easily automate routine tasks, reducing the time and effort required to manage
 Canvas LMS instances.
