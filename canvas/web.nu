@@ -69,7 +69,11 @@ def build-url [
   }
 }
 
-export def paginated-fetch [path, params? = {}] {
+export def paginated-fetch [
+  path
+  params? = {}
+  --unwrap: string
+] {
   1..
   | each {|page| 
     let query = (
@@ -79,7 +83,15 @@ export def paginated-fetch [path, params? = {}] {
       | to query
     )
     let url = build-url $env.CANVAS_URL $path $query
+
     get-url $url
+    | update body {|it| 
+      if $unwrap != null {
+        $it.body | get $unwrap
+      } else {
+        $it.body
+      }
+    }
   }
   | take while {|it| ($it.body | length) > 0 and $it.status.code in 200..299}
   | each {|it| $it.body}
