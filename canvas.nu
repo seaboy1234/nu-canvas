@@ -25,4 +25,5 @@ export use canvas/users.nu
 
 # Helpful utilities
 export use canvas/sis.nu
+export use canvas/find.nu
 export use canvas/my.nu
