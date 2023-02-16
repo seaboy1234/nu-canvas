@@ -64,3 +64,43 @@ export def list [
     }
   }
 }
+
+# Create one or more enrollments. 
+# Accepts a "course" or "section" column.
+# 
+# See https://canvas.instructure.com/doc/api/enrollments.html
+export def create [
+  enrollment? # A table with enrollment fields. Defaults to pipe input
+] {
+  $in
+  | default $enrollment
+  | each {|it|
+    let path = (
+      if ($it | columns | any {|it| $it == "course"})  {
+        $"/courses/(id-of $it.course)/enrollments"
+      } else if ($it | columns | any {|it| $it == "section"}) {
+        $"/sections(id-of $it.section)/enrollments"
+      } else {
+        let span = (metadata $it).span
+        error make {
+          msg: "Cannot determine course or section for enrollment",
+          label: {
+            text: "This record doesn't have a course or section"
+            start: $span.start
+            end: $span.end
+          }
+        }
+      }
+    )
+    
+    let enrollment = (
+      $it
+      | maybe-reject course section
+      | default 'invited' state
+      | rename -c [state enrollment_state]
+      | wrap enrollment
+    )
+
+    post $path $enrollment
+  }
+}
