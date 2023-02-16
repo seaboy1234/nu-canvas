@@ -54,7 +54,15 @@ def get-url [url] {
 
   let resp = ^curl $url -s -D - -X GET -H $"Authorization: Bearer ($env.CANVAS_TOKEN)"
 
-  parse-curl-response $resp
+  let resp = parse-curl-response $resp
+
+  if $resp.status.code == 403 {
+    $"Error 403: ($resp.status.value)"
+    sleep 5sec
+    get-url $url
+  } else {
+    return $resp
+  }
 }
 
 def build-url [
