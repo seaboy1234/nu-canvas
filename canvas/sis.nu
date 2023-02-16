@@ -7,7 +7,7 @@ export def course [
 export def user [
     sis_id: string
 ] {
-    users $"sis_user_id:($sis_id)"
+    users get $"sis_user_id:($sis_id)"
 }
 
 # export def term [
