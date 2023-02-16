@@ -52,7 +52,7 @@ export def assignments [
   $in
   | default $course
   | each {|it|
-    fetch $"/courses/(id-of $it)/assignments" {
+    paginated-fetch $"/courses/(id-of $it)/assignments" {
       include: $include
       search_term: $search
       bucket: $bucket
