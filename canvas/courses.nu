@@ -177,18 +177,24 @@ export def create [
 
     if $template != null {
       # TODO: move this logic to a `content-migrations` module
+      let template_course = main (id-of $template)
+
       let migration = {
-        migration_type: course_copy
+        migration_type: "course_copy_importer"
         settings: {
-          source_course_id: (id-of $template)
+          source_course_id: $template_course.id
         }
       }
 
-      let template_course = main (id-of $template)
-
       print $"Copying ($template_course.name) to ($course.name)"
 
-      post $"/courses/(id-of $course)/content_migrations" $migration
+      let resp = post $"/courses/(id-of $course)/content_migrations" $migration
+
+      if $resp.message != null {
+        error make {
+          msg: $"Failed to create content migration: ($resp.message)"
+        }
+      }
     }
 
     $course
