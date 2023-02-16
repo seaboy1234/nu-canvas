@@ -122,5 +122,5 @@ export def pageviews [
   $in
   | default $user
   | default self
-  | each {fetch $"/users/(id-of $in)/page_views" {start_time: $from, end_time: $to}}
+  | each {|it| paginated-fetch $"/users/(id-of $it)/page_views" {start_time: $from, end_time: $to}}
 }
