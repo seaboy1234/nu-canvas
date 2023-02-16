@@ -21,3 +21,7 @@ export def courses [
 ] {
   paginated-fetch $"/users/(id-of $as_user)/courses"
 }
+
+export def rate-limit [] {
+  check-rate-limit
+}

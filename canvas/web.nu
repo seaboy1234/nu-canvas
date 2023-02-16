@@ -49,6 +49,12 @@ def "to query" [] {
   | str join "&"
 }
 
+export def check-rate-limit [] {
+  get-url (build-url $env.CANVAS_URL "/users/self")
+  | get headers
+  | get x-rate-limit-remaining
+}
+
 def get-url [url] {
   $"GET ($url)";
 
