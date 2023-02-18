@@ -72,10 +72,19 @@ export def list [
 # 
 # See https://canvas.instructure.com/doc/api/enrollments.html
 export def create [
-  enrollment? # A table with enrollment fields. Defaults to pipe input
+  enrollment? # A table or record with enrollment fields. Defaults to pipe input
+  --course(-c): any # The course to create the enrollment in
+  --section: any # The section to create the enrollment in
+  --user(-u): any # The user to enroll
+  --role(-r): string # The role to enroll the user with
+  --state(-s): string # The state of the enrollment
 ] {
   $in
   | default $enrollment
+  | default $course course
+  | default $user user
+  | default $role role
+  | default $state state
   | each {|it|
     let path = (
       if ($it | columns | any {|it| $it == "course"})  {
