@@ -57,7 +57,7 @@ export def list [
       state: $state
       include: $include
       user_id: (id-of $user)
-      grading_period:_id (id-of $grading_period)
+      grading_period_id: (id-of $grading_period)
       enrollment_term_id: (id-of $enrollment_term)
       sis_account_id: $sis_account_ids
       sis_course_id: $sis_course_ids
