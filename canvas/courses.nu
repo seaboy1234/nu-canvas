@@ -90,7 +90,7 @@ export def section [
 
 export def "list sections" [
   course?
-  --include(-i) # Additional fields to include in the query. Allowed values: students, avatar_url, enrollments, total_students, passback_status, permissions
+  --include(-i): list # Additional fields to include in the query. Allowed values: students, avatar_url, enrollments, total_students, passback_status, permissions
 ] {
   $in
   | default $course
