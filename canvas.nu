@@ -22,6 +22,7 @@ export use canvas/courses.nu
 export use canvas/enrollments.nu
 export use canvas/submissions.nu
 export use canvas/terms.nu
+export use canvas/tools.nu
 export use canvas/users.nu
 
 # Helpful utilities
