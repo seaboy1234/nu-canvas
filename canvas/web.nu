@@ -17,6 +17,8 @@ def parse-curl-response [resp] {
       | flatten
       | each {$in | parse '<{url}>; rel="{link}"' | move link --before url}
       | flatten
+      | update url {|it| $it.url | parse -r '[^_]page=(?<page>\d+)' | get page -i | default '-1' | into int }
+      | flatten --all
       | transpose -i -r -d
     }
   )
@@ -30,7 +32,7 @@ def parse-curl-response [resp] {
       code: ($status.code.0 | into int)
       value: $status.value.0
     }
-    next_page: $next
+    links: $links
     headers: $head
     body: $body
   }
