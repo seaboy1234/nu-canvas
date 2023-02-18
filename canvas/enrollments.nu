@@ -30,6 +30,8 @@ def enrollments-impl [
     }
   }
 
+  let params = ($params | insert per_page 1000 | insert page first)
+
   fetch $"/($resource)/(id-of $thing)/enrollments" $params
 }
 
