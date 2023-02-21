@@ -248,7 +248,7 @@ export def create [
 
       let resp = post $"/courses/(id-of $course)/content_migrations" $migration
 
-      if $resp.message != null {
+      if ($resp | get message -i) != null {
         error make {
           msg: $"Failed to create content migration: ($resp.message)"
         }
