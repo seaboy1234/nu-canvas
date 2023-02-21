@@ -85,33 +85,47 @@ def build-url [
   }
 }
 
+def fetch-page [
+  path 
+  params 
+  page
+  --unwrap: string
+] {
+  let query = (
+    $params
+    | upsert per_page 100
+    | insert page $page
+    | to query
+  )
+  let url = build-url $env.CANVAS_URL $path $query
+
+  get-url $url
+  | update body {|it| 
+    if $unwrap != null {
+      $it.body | get $unwrap
+    } else {
+      $it.body
+    }
+  }
+}
+
 export def paginated-fetch [
   path
   params? = {}
   --unwrap: string
 ] {
-  1..
-  | each {|page| 
-    let query = (
-      $params
-      | upsert per_page 100
-      | insert page $page
-      | to query
-    )
-    let url = build-url $env.CANVAS_URL $path $query
+  let first_page = fetch-page $path $params 1 --unwrap=$unwrap
 
-    get-url $url
-    | update body {|it| 
-      if $unwrap != null {
-        $it.body | get $unwrap
-      } else {
-        $it.body
-      }
-    }
+  if ($first_page.links | get next -i) != null {
+    2..
+    | each {|page| fetch-page $path $params $page }
+    | take while {|it| ($it.body | length) > 0 and $it.status.code in 200..299}
+    | prepend $first_page
+    | each {|it| $it.body}
+    | flatten --all
+  } else {
+    $first_page.body
   }
-  | take while {|it| ($it.body | length) > 0 and $it.status.code in 200..299}
-  | each {|it| $it.body}
-  | flatten --all
 }
 
 export def fetch [path, params? = {}] {
