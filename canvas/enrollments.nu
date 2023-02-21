@@ -78,18 +78,28 @@ export def create [
   --user(-u): any # The user to enroll
   --role(-r): string # The role to enroll the user with
   --state(-s): string # The state of the enrollment
+  --notify(-n) # Whether to notify the user of this enrollment. Defaults to false.
 ] {
   $in
   | default $enrollment
+  | default {}
   | default $course course
-  | default $user user
+  | default $section section
+  | default (id-of $user) user_id
   | default $role role
+  | default "StudentEnrollment" role
   | default $state state
+  | default "invited" state
+  | default $notify notify
+  | update role {|it| $it.role | simple-role-to-enrollment-type}
+  | confirm "Create these enrollments?"
   | each {|it|
     let path = (
-      if ($it | columns | any {|it| $it == "course"})  {
+      if (($it | columns | any {|it| $it == "sis_course_id"}) and $it.sis_course_id != null)  {
+        $"/courses/($it.sis_course_id)/enrollments"
+      } else if (($it | columns | any {|it| $it == "course"}) and $it.course != null)  {
         $"/courses/(id-of $it.course)/enrollments"
-      } else if ($it | columns | any {|it| $it == "section"}) {
+      } else if (($it | columns | any {|it| $it == "section"}) and $it.section != null) {
         $"/sections(id-of $it.section)/enrollments"
       } else {
         let span = (metadata $it).span
@@ -111,7 +121,26 @@ export def create [
       | rename -c [state enrollment_state]
       | wrap enrollment
     )
-
+    
     post $path $enrollment
+  }
+}
+
+def simple-role-to-enrollment-type [] {
+  let input = $in
+  let role = ($input | str downcase)
+
+  if $role == "student" { 
+    "StudentEnrollment"
+  } else if $role == "teacher" {
+    "TeacherEnrollment"
+  } else if $role == "designer" {
+    "DesignerEnrollment"
+  } else if $role == "ta" {
+    "TaEnrollment"
+  } else if $role == "observer" {
+    "ObserverEnrollment"
+  } else {
+    $input
   }
 }
