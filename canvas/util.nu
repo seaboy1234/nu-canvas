@@ -35,3 +35,30 @@ export def maybe-reject [
   $cols_to_remove
   | reduce -f $pipe {|it, acc| $acc | reject $it}
 }
+
+export def confirm [prompt: string = "Are you sure?"] {
+  let pipe = $in
+
+  $pipe | table;
+
+  mut choice = false
+  mut chosen = false
+  while not $chosen {
+    let user_input = (input $"($prompt) [Yn]")
+    if (["Y", "y", ""] | any {|it| $it == $user_input}) {
+      $choice = true
+      $chosen = true
+    } else if (["N", "n"] | any {|it| $it == $user_input}) {
+      $choice = false
+      $chosen = true
+    } else {
+      print "Invalid choice";
+    }
+  }
+
+  if $choice {
+    $pipe
+  } else {
+    []
+  }
+}
