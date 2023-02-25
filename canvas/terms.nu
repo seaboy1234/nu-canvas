@@ -21,7 +21,7 @@ export def main [
   $in
   | default $term
   | each {|it|
-    fetch $"/accounts/(id-of $account)/(id-of $it)"
+    fetch $"/accounts/(id-of $account)/terms/(id-of $it)"
   }
   | maybe-flatten
 }
