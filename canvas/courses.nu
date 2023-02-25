@@ -85,7 +85,9 @@ export def section [
     fetch $"/sections/($in)"
   }
   | maybe-flatten
-  | into datetime start_at end_at
+  | update created_at {|it| $it.created_at | try { into datetime }}
+  | update end_at {|it| $it.created_at | try { into datetime }}
+  | update start_at {|it| $it.created_at | try { into datetime }}
 }
 
 export def "list sections" [
@@ -95,10 +97,10 @@ export def "list sections" [
   $in
   | default $course
   | each { paginated-fetch $"/courses/(id-of $in)/sections" {include: $include}}
-  | maybe-flatten
-  | into datetime start_at end_at
+  | update created_at {|it| $it.created_at | try { into datetime }}
+  | update end_at {|it| $it.created_at | try { into datetime }}
+  | update start_at {|it| $it.created_at | try { into datetime }}
 }
-
 
 export def tabs [
   course?
