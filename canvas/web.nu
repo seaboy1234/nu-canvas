@@ -58,7 +58,9 @@ export def check-rate-limit [] {
 }
 
 def get-url [url] {
-  $"GET ($url)";
+  if $env.CANVAS_DEBUG {  
+    $"GET ($url)";
+  }
 
   let resp = ^curl $url -s -D - -X GET -H $"Authorization: Bearer ($env.CANVAS_TOKEN)"
 
@@ -141,8 +143,9 @@ export def put [path, data] {
   let authorization = $"Authorization: Bearer ($env.CANVAS_TOKEN)"
   let content_type = "Content-Type: application/json"
   let body = ($data | to json)
-
-  $"PUT ($url)";
+  if $env.CANVAS_DEBUG {
+    $"PUT ($url)";
+  }
 
   ^curl $url -s -X PUT -H $authorization -H $content_type -d $body
   | from json
@@ -153,8 +156,9 @@ export def post [path, data] {
   let authorization = $"Authorization: Bearer ($env.CANVAS_TOKEN)"
   let content_type = "Content-Type: application/json"
   let body = ($data | to json)
-
-  $"POST ($url)";
+  if $env.CANVAS_DEBUG {
+    $"POST ($url)";
+  }
 
   ^curl $url -s -X POST -H $authorization -H $content_type -d $body
   | from json
@@ -165,8 +169,9 @@ export def delete [path, data?] {
   let authorization = $"Authorization: Bearer ($env.CANVAS_TOKEN)"
   let content_type = "Content-Type: application/json"
   let body = ($data | to json)
-
-  $"DELETE ($url)";
+  if $env.CANVAS_DEBUG {
+    $"DELETE ($url)";
+  }
 
   ^curl $url -s -X DELETE -H $authorization -H $content_type -d $body
   | from json

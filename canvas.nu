@@ -11,6 +11,9 @@ export-env {
   if not "CANVAS_ROOT_ACCOUNT_ID" in $env {
     let-env CANVAS_ROOT_ACCOUNT_ID = 1
   }
+  if not "CANVAS_DEBUG" in $env {
+    let-env CANVAS_DEBUG = false
+  }
 }
 
 use canvas/util.nu *
