@@ -7,6 +7,12 @@ export def list [
   $in
   | default $assignment
   | each {|it|
+    let course = (
+      $it
+      | get course_id -i
+      | default $course
+    )
+    
     let path = if $course != null {
       $"/courses/(id-of $course)/assignments/(id-of $it)/submissions"
       } else if $section != null {
