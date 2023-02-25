@@ -102,6 +102,48 @@ export def "list sections" [
   | update start_at {|it| $it.created_at | try { into datetime }}
 }
 
+export def users [
+  course?: any
+  --include(-i): list
+  --search(-s): string
+  --sort: string
+  --type: list
+  --role: string
+  --role-id: int
+  --users: list
+  --state: list
+] {
+  $in
+  | default $course
+  | each {|course|
+    paginated-fetch $"/courses/(id-of $course)/users" {
+      include: $include
+      search_term: $search
+      sort: $sort
+      enrollment_type: $type
+      enrollment_role: $role
+      enrollment_role_id: $role_id
+      enrollment_state: $state
+      user_ids: ($users | each {|it| id-of $it})
+    }
+  }
+}
+
+export def user [
+  course?: any
+  --users(-u): any
+  --include(-i): list
+] {
+  $in
+  | default $course
+  | each {|course|
+    $users
+    | each {|user|
+      fetch $"/courses/(id-of $course)/users/(id-of $user)" {include: $include}
+    }
+  }
+}
+
 export def tabs [
   course?
 ] {
