@@ -21,6 +21,7 @@ use canvas/web.nu *
 
 # Main endpoints
 export use canvas/accounts.nu
+export use canvas/assignments.nu
 export use canvas/courses.nu
 export use canvas/enrollments.nu
 export use canvas/submissions.nu
