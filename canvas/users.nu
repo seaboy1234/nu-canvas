@@ -95,6 +95,15 @@ export def "settings update" [
   put $"/users/(id-of $user)/settings" $settings
 }
 
+export def comm-channels [
+  user?
+] {
+  $in
+  | default $user
+  | default self
+  | each { fetch $"/users/(id-of $in)/communication_channels" }
+}
+
 export def profile [
   user?
 ] {
