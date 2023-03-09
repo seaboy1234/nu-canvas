@@ -24,6 +24,7 @@ export use canvas/accounts.nu
 export use canvas/assignments.nu
 export use canvas/courses.nu
 export use canvas/enrollments.nu
+export use canvas/modules.nu
 export use canvas/submissions.nu
 export use canvas/terms.nu
 export use canvas/tools.nu
