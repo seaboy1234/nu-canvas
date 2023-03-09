@@ -3,11 +3,13 @@ NuShell scripts for managing Canvas LMS instances
 
 ```shell
 # Get all published courses that use Zoom
-> canvas accounts courses --published=true
+> canvas courses list --published=true
   | insert using_zoom? {
-    canvas courses tabs
-    | where label == "Zoom" and hidden == false
-    | is-empty
+    not ( 
+      canvas courses tabs
+      | where label == "Zoom" and hidden == false
+      | is-empty
+    )
   }
   | select id name using_zoom?
 
@@ -19,7 +21,7 @@ NuShell scripts for managing Canvas LMS instances
 ╰───┴────┴────────────┴─────────────╯
 
 # Get all manually enrolled (non-SIS) users in courses
-> canvas accounts courses
+> canvas courses list
 | insert manual_enrollments {
   canvas enrollments list
   | where sis_import_id == null
