@@ -198,12 +198,16 @@ export def "tabs toggle" [
 export def create [
   attrs?: table
   --account(-a): any
+  --name(-n): string
+  --short-name(-s): string
+
   --offer(-o)
   --enroll-me(-e)
   --reactivate(-r)
 ] {
   $in
   | default $attrs
+  | default {}
   | each {|it|
     let offer = (
       $it
@@ -221,6 +225,7 @@ export def create [
       $it
       | get reactivate -i
       | default $reactivate
+      | default true
     )
 
     let account = (
@@ -242,6 +247,8 @@ export def create [
       course: (
         $it
         | maybe-reject offer enroll_me reactivate account template
+        | default $name name
+        | default $name course_code
         | default "Unnamed Course" name
       )
       offer: $offer
