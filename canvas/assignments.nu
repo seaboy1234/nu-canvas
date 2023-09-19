@@ -30,11 +30,14 @@ export def list [
 export def main [
   assignment: int
   --course: any
+  --include: list
 ] {
   $in
   | default $course
   | each {|it|
-    fetch $"/courses/(id-of $it)/assignments/($assignment)"
+    fetch $"/courses/(id-of $it)/assignments/($assignment)" {
+      include: $include
+    }
     | each {|it| 
       $it 
       | default (id-of $course) course_id
