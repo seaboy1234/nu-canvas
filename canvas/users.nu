@@ -140,6 +140,16 @@ export def comm-channels [
   | each {|it| fetch $"/users/(id-of $it)/communication_channels" }
 }
 
+export def "comm-channels delete" [
+  user? # The user to delete the communication channel from.
+  --channel(-c): any # The communication channel to delete. Use the id of the communication channel.
+] {
+  $in
+  | default $user
+  | default self
+  | each {|it| web delete $"/users/(id-of $it)/communication_channels/(id-of $channel)"}
+}
+
 # Get a user's profile.
 export def profile [
   user?
