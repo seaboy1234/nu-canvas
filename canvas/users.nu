@@ -29,9 +29,10 @@ export def list [
   $in
   | default $account
   | default $env.CANVAS_ROOT_ACCOUNT_ID
-  | each {
-    paginated-fetch $"/accounts/(id-of $in)/users" {search_term: $search, sort: $sort, order: $order, include: $include}
-    | update created_at {|it| $it.created_at | try { into datetime }}
+  | each {|it|
+    $it 
+    | paginated-fetch $"/accounts/(id-of $it)/users" {search_term: $search, sort: $sort, order: $order, include: $include}
+    | to-datetime created_at updated_at last_login
   }
 }
 
@@ -48,7 +49,8 @@ export def missing-submissions [
   | maybe-flatten
 }
 
-export def get [
+# Get a user. If no user is specified, the current user is returned.
+export def main [
   user?
   --include(-i): list
     # Array of additional information to include on the user record. “locale”, “avatar_url”, “permissions”, “email”,
@@ -57,8 +59,8 @@ export def get [
   $in
   | default $user
   | default self
-  | each {
-    fetch $"/users/(id-of $in)/"
+  | each {|it|
+    fetch $"/users/(id-of $it)/" {include: $include}
     | each {|it| try {into datetime created_at} catch {$it} }
   }
   | maybe-flatten
@@ -70,10 +72,11 @@ export def logout [
   $in
   | default $user
   | default self
-  | each { ^delete $"/users/(id-of $in)/sessions"}
+  | each {|it| ^delete $"/users/(id-of $it)/sessions"}
 }
 
-export def get-settings [
+# Get a user's settings.
+export def settings [
   user?
 ] {
   $in
@@ -101,7 +104,7 @@ export def comm-channels [
   $in
   | default $user
   | default self
-  | each { fetch $"/users/(id-of $in)/communication_channels" }
+  | each {|it| fetch $"/users/(id-of $it)/communication_channels" }
 }
 
 export def profile [
@@ -110,7 +113,7 @@ export def profile [
   $in
   | default $user
   | default self
-  | each {fetch $"/users/(id-of $in)/profile"}
+  | each {|it| fetch $"/users/(id-of $it)/profile"}
   | maybe-flatten
 }
 
@@ -120,17 +123,24 @@ export def courses [
   $in
   | default $user
   | default self
-  | each { fetch $"/users/(id-of $in)/courses"}
+  | each {|it| fetch $"/users/(id-of $it)/courses"}
   | maybe-flatten
 }
 
+# List page views for a user. If no user is specified, the current user's page views are returned.
+# If no time range is specified, the last 7 days are returned.
 export def pageviews [
   user?
-  --from(-f): datetime
-  --to(-t): datetime
+  --from(-f): datetime # The beginning of the time range from which you want page views.
+  --to(-t): datetime # The end of the time range from which you want page views.
 ] {
   $in
   | default $user
   | default self
-  | each {|it| paginated-fetch $"/users/(id-of $it)/page_views" {start_time: $from, end_time: $to}}
+  | each {|it| 
+    let $from = ($from | default ((date now) - 7day) | format date "%Y-%m-%dT%H:%M:%SZ")
+    let $to = ($to | default (date now) | format date "%Y-%m-%dT%H:%M:%SZ")
+
+    paginated-fetch $"/users/(id-of $it)/page_views" {start_time: $from, end_time: $to} --spec
+  }
 }

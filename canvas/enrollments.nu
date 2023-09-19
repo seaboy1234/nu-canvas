@@ -2,21 +2,16 @@ def enrollments-impl [
   thing
   params
 ] {
-  mut resource = ""
 
-  if ($thing | describe | str starts-with "record") {
-    if ($thing | columns | any {|it| $it == "course_code"}) {
-      $resource = "courses"
+  let resource = (
+    match $thing {
+      {course_code: _} => "courses"
+      {course_id: _} => "sections"
+      {sortable_name: _} => "users"
+      {} => ""
+      _ => "courses" 
     }
-    if ($thing | columns | any {|it| $it == "course_id"}) {
-      $resource = "sections"
-    }
-    if ($thing | columns | any {|it| $it == "sortable_name"}) {
-      $resource = "users"
-    }
-  } else {
-    $resource = "courses"
-  }
+  )
 
   if $resource == "" {
     let span = (metadata $thing).span;
@@ -30,9 +25,11 @@ def enrollments-impl [
     }
   }
 
-  let params = ($params | insert per_page 1000 | insert page first)
-
-  fetch $"/($resource)/(id-of $thing)/enrollments" $params
+  paginated-fetch $"/($resource)/(id-of $thing)/enrollments" $params --spec
+  | each {|it|
+    $it
+    | to-datetime last_activity_at created_at updated_at
+  }
 }
 
 # Fetch the enrollments for a course, course section, or user.

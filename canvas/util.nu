@@ -8,11 +8,47 @@ export def maybe-flatten [] {
   }
 }
 
-export def id-of [thing] {
+export def to-datetime [
+  ...path
+] {
+  each {|it|
+    $path
+    | reduce -f $it {|column, acc| 
+      if $column in ($acc | columns) {
+        $acc
+        | update $column {|it| $it | get $column | try { into datetime } catch { null }}
+      } else {
+        $acc
+      }
+    }
+  }
+}
+
+export def id-of [
+  thing
+  --prefix: any
+] {
+  let column = if $prefix != null { $prefix + "_id" } else { "id" }
+
   if ($thing | describe | str starts-with "record") {
-    return $thing.id
+    return (
+      if $column in ($thing | columns) {
+          $thing | get $column
+        } else {
+          $thing | get "id"
+        }
+    )
   } else if ($thing | describe | str starts-with "list") {
-    return $thing.id
+    return (
+      $thing
+      | each {|it|
+        if $column in ($it | columns) {
+          $it | get $column
+        } else {
+          $it | get "id"
+        }
+      }
+    )
   }
 
   $thing
@@ -36,13 +72,13 @@ export def maybe-reject [
   | reduce -f $pipe {|it, acc| $acc | reject $it}
 }
 
-export def confirm [prompt: string = "Are you sure?"] {
+export def confirm [prompt: string = "Are you sure?", bypass_prompt = false] {
   let pipe = $in
 
-  $pipe | table;
+  print ($pipe | table);
 
-  mut choice = false
-  mut chosen = false
+  mut choice = $bypass_prompt
+  mut chosen = $bypass_prompt
   while not $chosen {
     let user_input = (input $"($prompt) [Yn]")
     if (["Y", "y", ""] | any {|it| $it == $user_input}) {
@@ -60,5 +96,17 @@ export def confirm [prompt: string = "Are you sure?"] {
     $pipe
   } else {
     []
+  }
+}
+
+export def add [
+  value 
+  column
+] {
+  if $value != null {
+    $in
+    | default $value $column
+  } else {
+    $in
   }
 }

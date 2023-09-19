@@ -53,8 +53,8 @@ export def list [
     completed: $completed
     blueprint: $blueprint
     blueprint_associated: $blueprint_associated
-    by_teachers: ($teachers | each { id-of $in })
-    by_subaccounts: ($subaccounts | each { id-of $in })
+    by_teachers: ($teachers | each {|it| id-of $it })
+    by_subaccounts: ($subaccounts | each {|it| id-of $it })
     state: $state
     enrollment_term_id: (id-of $term)
     search_term: $search
@@ -67,8 +67,8 @@ export def list [
   }
 
   $accounts
-  | each { 
-    paginated-fetch $"/accounts/(id-of $in)/courses" $params 
+  | each {|it|
+    paginated-fetch $"/accounts/(id-of $it)/courses" $params 
     | update created_at {|it| $it.created_at | try { into datetime }}
     | update end_at {|it| $it.created_at | try { into datetime }}
     | update start_at {|it| $it.created_at | try { into datetime }}
@@ -81,8 +81,8 @@ export def section [
 ] {
   $in
   | default $section_id
-  | each {
-    fetch $"/sections/($in)"
+  | each {|it|
+    fetch $"/sections/($it)"
   }
   | maybe-flatten
   | update created_at {|it| $it.created_at | try { into datetime }}
@@ -96,10 +96,10 @@ export def "list sections" [
 ] {
   $in
   | default $course
-  | each { paginated-fetch $"/courses/(id-of $in)/sections" {include: $include}}
+  | each {|it| paginated-fetch $"/courses/(id-of $it)/sections" {include: $include}}
   | update created_at {|it| $it.created_at | try { into datetime }}
-  | update end_at {|it| $it.created_at | try { into datetime }}
-  | update start_at {|it| $it.created_at | try { into datetime }}
+  | update end_at {|it| $it.end_at | try { into datetime }}
+  | update start_at {|it| $it.start_at | try { into datetime }}
 }
 
 export def users [
