@@ -9,10 +9,13 @@ export-env {
     exit 1
   }
   if not "CANVAS_ROOT_ACCOUNT_ID" in $env {
-    let-env CANVAS_ROOT_ACCOUNT_ID = 1
+    $env.CANVAS_ROOT_ACCOUNT_ID = 1
+  }
+  if not "CANVAS_MAX_RETRIES" in $env {
+    $env.CANVAS_MAX_RETRIES = 3
   }
   if not "CANVAS_DEBUG" in $env {
-    let-env CANVAS_DEBUG = true
+    $env.CANVAS_DEBUG = true
   }
 }
 
