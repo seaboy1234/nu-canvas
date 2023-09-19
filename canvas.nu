@@ -22,16 +22,24 @@ export-env {
 use canvas/util.nu *
 use canvas/web.nu *
 
+# Some of the functions' names clash, so provide an escape hatch if a module needs to disambiguate
+use canvas/web.nu 
+
 # Main endpoints
 export use canvas/accounts.nu
 export use canvas/assignments.nu
-export use canvas/courses.nu
 export use canvas/enrollments.nu
+export use canvas/courses.nu
+export use canvas/discussions.nu
 export use canvas/modules.nu
+export use canvas/pages.nu
+export use canvas/quizzes.nu
+export use canvas/roles.nu
 export use canvas/submissions.nu
 export use canvas/terms.nu
 export use canvas/tools.nu
 export use canvas/users.nu
+export use canvas/groups.nu
 
 # Helpful utilities
 export use canvas/sis.nu

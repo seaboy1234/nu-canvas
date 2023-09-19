@@ -73,6 +73,10 @@ export def list [
   }
 }
 
+# Retrieve a list of the modules in a course.
+# export alias modules = (modules list)
+
+# Retrieve a single course section.
 export def section [
   section_id?
   --include(-i) # Additional fields to include in the query. Allowed values: students, avatar_url, enrollments, total_students, passback_status, permissions
