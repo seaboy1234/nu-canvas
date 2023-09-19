@@ -1,3 +1,4 @@
+# Get a module in a course.
 export def main [
   --module(-m): any
   --course(-c): any
@@ -26,6 +27,7 @@ export def main [
   }
 }
 
+# List modules in a course.
 export def list [
   --course(-c): any
   --include(-i): list # Additional fields to include. Allowed values: items, content_details

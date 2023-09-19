@@ -1,13 +1,16 @@
+# Get a course by SIS ID.
 export def course [
     sis_id: string
 ] {
     courses $"sis_course_id:($sis_id)"
 }
 
+# Get a user by SIS ID.
 export def user [
     sis_id: string
+    --include(-i): list
 ] {
-    users get $"sis_user_id:($sis_id)"
+    users $"sis_user_id:($sis_id)" --include=$include
 }
 
 # export def term [
@@ -16,6 +19,7 @@ export def user [
 #     terms get $"sis_term_id:($sis_id)"
 # }
 
+# Get a course section by SIS ID.
 export def section [
     sis_id: string
 ] {
@@ -34,10 +38,10 @@ export def "imports list" [
   $in
   | default $account
   | default $env.CANVAS_ROOT_ACCOUNT_ID
-  | each {
-    paginated-fetch $"/accounts/($in)/sis_imports" {
-      created_before: $created_before
-      created_after: $created_after
+  | each {|it|
+    paginated-fetch --unwrap sis_imports $"/accounts/($it)/sis_imports" {
+      created_before: ($created_before | format date "%Y-%m-%dT%H:%M:%S")
+      created_since: ($created_after | format date "%Y-%m-%dT%H:%M:%S")
       workflow_state: $state
     }
   }

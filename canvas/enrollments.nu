@@ -73,9 +73,11 @@ export def create [
   --course(-c): any # The course to create the enrollment in
   --section: any # The section to create the enrollment in
   --user(-u): any # The user to enroll
+  --sis-user: string # The SIS ID of the user to enroll
   --role(-r): string # The role to enroll the user with
   --state(-s): string # The state of the enrollment
   --notify(-n) # Whether to notify the user of this enrollment. Defaults to false.
+  --no-confirm(-y) # Don't show the confirmation prompt
 ] {
   $in
   | default $enrollment
@@ -83,13 +85,14 @@ export def create [
   | default $course course
   | default $section section
   | default (id-of $user) user_id
+  | default $"sis_user_id:($sis_user)" user_id
   | default $role role
   | default "StudentEnrollment" role
-  | default $state state
-  | default "invited" state
+  | default $state enrollment_state
+  | default "invited" enrollment_state
   | default $notify notify
   | update role {|it| $it.role | simple-role-to-enrollment-type}
-  | confirm "Create these enrollments?"
+  | confirm "Create these enrollments?" $no_confirm
   | each {|it|
     let path = (
       if (($it | columns | any {|it| $it == "sis_course_id"}) and $it.sis_course_id != null)  {
@@ -114,8 +117,7 @@ export def create [
     let enrollment = (
       $it
       | maybe-reject course section
-      | default 'invited' state
-      | rename -c [state enrollment_state]
+      | default 'invited' enrollment_state
       | wrap enrollment
     )
     
@@ -127,17 +129,12 @@ def simple-role-to-enrollment-type [] {
   let input = $in
   let role = ($input | str downcase)
 
-  if $role == "student" { 
-    "StudentEnrollment"
-  } else if $role == "teacher" {
-    "TeacherEnrollment"
-  } else if $role == "designer" {
-    "DesignerEnrollment"
-  } else if $role == "ta" {
-    "TaEnrollment"
-  } else if $role == "observer" {
-    "ObserverEnrollment"
-  } else {
-    $input
+  match $role {
+    "student" => "StudentEnrollment"
+    "teacher" => "TeacherEnrollment"
+    "designer" => "DesignerEnrollment"
+    "ta" => "TaEnrollment"
+    "observer" => "ObserverEnrollment"
+    _ => $input
   }
 }

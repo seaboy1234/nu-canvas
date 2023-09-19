@@ -11,10 +11,8 @@ export def main [
     # this, instead of giving the teacher enrollments, the count of teachers will be given under a
     # teacher_count key.
 ] {
-  fetch $"/courses/($course_id)" {include: $include, teacher_limit: $max_teachers}
-  | update created_at {|it| $it.created_at | try { into datetime }}
-  | update end_at {|it| $it.end_at | try { into datetime }}
-  | update start_at {|it| $it.start_at | try { into datetime }}
+  fetch $"/courses/(id-of $course_id)" {include: $include, teacher_limit: $max_teachers}
+  | to-datetime created_at end_at start_at 
 }
 
 # Retrieve a paginated list of courses.
@@ -90,8 +88,9 @@ export def section [
   | update start_at {|it| $it.created_at | try { into datetime }}
 }
 
+# List the sections in one or more courses.
 export def "list sections" [
-  course?
+  course? # The course to search in. Defaults to the pipeline input.
   --include(-i): list # Additional fields to include in the query. Allowed values: students, avatar_url, enrollments, total_students, passback_status, permissions
 ] {
   $in
@@ -102,9 +101,10 @@ export def "list sections" [
   | update start_at {|it| $it.start_at | try { into datetime }}
 }
 
+# List the users in one or more courses.
 export def users [
   course?: any
-  --include(-i): list
+  --include(-i): list # Additional fields to include in the query. Allowed values: avatar_url, enrollments, email, locale, last_login, pseudonym, time_zone, total_scores, current_grading_period_scores, current_grading_period_totals, final_grading_period_scores, final_grading_period_totals, permissions, observed_users, custom_links, group_ids, avatar_url, enrollments, email, locale, last_login, pseudonym, time_zone, total_scores, current_grading_period_scores, current_grading_period_totals, final_grading_period_scores, final_grading_period_totals, permissions, observed_users, custom_links, group_ids
   --search(-s): string
   --sort: string
   --type: list
@@ -129,6 +129,7 @@ export def users [
   }
 }
 
+# Get a single user in a course.
 export def user [
   course?: any
   --users(-u): any
@@ -144,6 +145,7 @@ export def user [
   }
 }
 
+# List the tabs in a course's navigation.
 export def tabs [
   course?
 ] {
@@ -156,6 +158,7 @@ export def tabs [
   }
 }
 
+# Update the position or visibility of a tab.
 export def "tabs update" [
   tab?
   --course(-c)
@@ -176,6 +179,7 @@ export def "tabs update" [
   }
 }
 
+# Toggle the visibility of a tab.
 export def "tabs toggle" [
   predicate: closure
 ] {
@@ -194,16 +198,17 @@ export def "tabs toggle" [
 # Create one or more new courses
 # 
 # See https://canvas.instructure.com/doc/api/courses.html#method.courses.create
-# Top-level options are 
 export def create [
   attrs?: table
-  --account(-a): any
-  --name(-n): string
-  --short-name(-s): string
+  --account(-a): any # The account to create this course in
+  --name(-n): string # The name of the course
+  --short-name(-s): string # The short name of the course
+  --sis-id(-i): string # The SIS ID of the course
 
-  --offer(-o)
-  --enroll-me(-e)
-  --reactivate(-r)
+  --offer(-o) # Whether to make this course public
+  --enroll-me(-e) # Whether to enroll the caller (default: false)
+  --teacher(-t): any # Enroll a teacher user
+  --reactivate(-r): any # Whether to reactivate a previously deleted course with the same SIS id (default: true)
 ] {
   $in
   | default $attrs
@@ -247,41 +252,146 @@ export def create [
       course: (
         $it
         | maybe-reject offer enroll_me reactivate account template
-        | default $name name
-        | default $name course_code
+        | add $name name
+        | add $name course_code
         | default "Unnamed Course" name
+        | default "Unnamed Course" course_code
       )
       offer: $offer
       enroll_me: $enroll_me
-      enable_sis_reactivation: $reactivate
+      enable_sis_reactivation: false
     }
 
-    print $"Creating ($it.name)"
+    print $"Creating ($options.course.name)"
 
-    let course = post $"/accounts/(id-of $account)/courses" $options
+    $options;
 
-    if $template != null {
-      # TODO: move this logic to a `content-migrations` module
-      let template_course = main (id-of $template)
+    let course = (post $"/accounts/(id-of $account)/courses" $options)
 
-      let migration = {
-        migration_type: "course_copy_importer"
-        settings: {
-          source_course_id: $template_course.id
-        }
-      }
-
-      print $"Copying ($template_course.name) to ($course.name)"
-
-      let resp = post $"/courses/(id-of $course)/content_migrations" $migration
-
-      if ($resp | get message -i) != null {
-        error make {
-          msg: $"Failed to create content migration: ($resp.message)"
-        }
-      }
-    }
+     if $template != null {
+       copy --from $template --to $course
+     }
+     
+     if $teacher != null {
+       
+       enrollments create -y --course=$course --user=$teacher --role=teacher --state=active --notify
+     }
 
     $course
+  }
+}
+
+export def edit [
+  attrs?
+  --course: any
+  --account: any
+  --name: string
+  --short-name: string
+  --start-at: datetime
+  --end-at: datetime
+  --license: string
+  --description: string
+  --term: any
+  --sis-id: string
+  --quota: int
+  --state: string
+  --home: string
+  --syllabus-body: string
+  --format: string
+] {
+  $in
+  | default $attrs
+  | default {}
+  | add $course id
+  | add $name name
+  | add $short_name course_code
+  | add (id-of $account) account_id
+  | add $start_at start_at
+  | add $end_at end_at
+  | add $license license
+  | add $description public_description
+  | add (id-of $term) term_id
+  | add $sis_id sis_course_id
+  | add $quota storage_quota_mb
+  | add $state event
+  | add $home default_view
+  | add $syllabus_body syllabus_body
+  | add $format course_format
+  | each {|it| 
+    let params = {
+      course: (
+        $it
+        | maybe-reject id
+      )
+    }
+
+    echo $params;
+
+    put $"/courses/(id-of $it)" $params
+  }
+}
+
+export def copy [
+  --from(-f): any
+  --to(-t): any
+  --only(-o): list
+] {
+  let template_course = (main (id-of $from))
+
+  let migration = {
+    migration_type: "course_copy_importer"
+    settings: {
+      source_course_id: $template_course.id
+    }
+  }
+
+  print $"Copying ($template_course.name) to ($to.name)"
+
+  let resp = (post $"/courses/(id-of $to)/content_migrations" $migration)
+
+  if ($resp | get message -i) != null {
+    error make {
+      msg: $"Failed to create content migration: ($resp.message)"
+    }
+  }
+}
+
+export def imports [
+  --course(-c): any
+] {
+  $in
+  | default $course
+  | each {|it|
+    fetch $"/courses/(id-of $it)/content_migrations"
+  }
+}
+
+export def delete [
+  --course(-c): any
+  --no-prompt(-y)
+] {
+  $in
+  | default $course
+  | each {|it|
+    main $it
+  }
+  | confirm "Are you sure you want to delete these courses?" $no_prompt
+  | each {|it|
+    web delete $"/courses/(id-of $it)" {event: "delete"}
+  }
+}
+
+export def conclude [
+  --course(-c): any
+  --no-prompt(-y)
+] {
+  $in
+  | default $course
+  | each {|it|
+    main $it
+  }
+  | confirm "Are you sure you want to conclude these courses?" $no_prompt
+  | each {|it|
+    web delete $"/courses/(id-of $it)" {event: "conclude"}
   }
 }

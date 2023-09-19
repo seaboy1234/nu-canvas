@@ -1,3 +1,4 @@
+# List submissions for an assignment or a list of assignments
 export def list [
   assignment?
   --course(-c): any

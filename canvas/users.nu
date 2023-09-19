@@ -1,17 +1,42 @@
+# Edit a user's information.
 export def edit [
-  user?
-  --override-sis(-o)
+  user? # The user or user id to update.
+  --name(-n): string # The full name of the user.
+  --short-name(-s): string # The abbreviated name of the user.
+  --sortable-name(-S): string # The name of the user that is should be used for sorting groups of users, such as in the gradebook.
+  --time-zone(-t): string # The time zone for the user. Allowed time zones are {http://www.iana.org/time-zones IANA time zones} or friendlier {http://api.rubyonrails.org/classes/ActiveSupport/TimeZone.html Ruby on Rails time zones}.
+  --email(-e): string # The email address of the user.
+  --locale(-l): string # The user's preferred language, from the list of languages Canvas supports in user settings. This is in RFC-5646 format.
+  --title(-T): string # The user's title.
+  --bio(-b): string # A short bio for the user.
+  --pronouns(-p): string # The pronouns of the user.
 ] {
   $in
   | default $user
   | each {|user|
-    let params = (
+    let user_params = (
       $user
-      | select -i name short_name sortable_name time_zone email locale title bio pronouns event avatar
+      | select -i name short_name sortable_name time_zone email locale title bio pronouns
       | transpose key value
       | where value != null
       | wrap user
-      | merge {override_sis_stickiness: $override_sis}
+    )
+
+    let params = {
+      name: $name, 
+      short_name: $short_name, 
+      sortable_name: $sortable_name, 
+      time_zone: $time_zone, 
+      email: $email, 
+      locale: $locale, 
+      title: $title, 
+      bio: $bio, 
+      pronouns: $pronouns
+    }
+
+    let params = (
+      $user
+      | merge $params
     )
 
     put $"/users/(id-of $user)" $params
@@ -19,6 +44,7 @@ export def edit [
   | maybe-flatten
 }
 
+# List users in an account.
 export def list [
   account?
   --search(-s): string
@@ -36,6 +62,7 @@ export def list [
   }
 }
 
+# List a user's missing submissions in one or more courses, or in all courses.
 export def missing-submissions [
   user?
   --include(-i): list # Additional fields to include. Allowed values: planner_overrides, course
@@ -47,6 +74,8 @@ export def missing-submissions [
   | default self
   | each {|user| fetch $"/users/(id-of $user)/missing_submissions"}
   | maybe-flatten
+  | to-datetime due_at lock_at unlock_at created_at updated_at peer_reviews_assign_at 
+  | to-datetime overrides.due_at overrides.lock_at overrides.unlock_at overrides.all_day_date
 }
 
 # Get a user. If no user is specified, the current user is returned.
@@ -66,6 +95,8 @@ export def main [
   | maybe-flatten
 }
 
+# Terminate a user's session. If no user is specified, the current user's session is terminated.
+# WARNING: This will revoke your configured access token if you are terminating your own session.
 export def logout [
   user?
 ] {
@@ -86,6 +117,7 @@ export def settings [
   | maybe-flatten
 }
 
+# Update a user's settings.
 export def "settings update" [
   settings?
   --user(-u): any = self
@@ -98,6 +130,7 @@ export def "settings update" [
   put $"/users/(id-of $user)/settings" $settings
 }
 
+# Get a user's communication channels.
 export def comm-channels [
   user?
 ] {
@@ -107,6 +140,7 @@ export def comm-channels [
   | each {|it| fetch $"/users/(id-of $it)/communication_channels" }
 }
 
+# Get a user's profile.
 export def profile [
   user?
 ] {
@@ -117,6 +151,7 @@ export def profile [
   | maybe-flatten
 }
 
+# List a user's courses.
 export def courses [
   user?
 ] {

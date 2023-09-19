@@ -1,3 +1,4 @@
+# List enrollment terms in an account
 export def list [
   account?
   --include(-i): list
@@ -14,6 +15,7 @@ export def list [
   | maybe-flatten
 }
 
+# Get an enrollment term
 export def main [
   term?
   --account(-a): int = 1

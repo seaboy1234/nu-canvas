@@ -1,6 +1,7 @@
+# List external tools in a course, account, or group.
 export def list [
   thing?
-  --scope: string # courses, accounts, or groups
+  --scope: string # The scope of the external tool. One of "accounts", "courses", or "groups". Defaults to "accounts".
 ] {
   $in
   | default $thing
