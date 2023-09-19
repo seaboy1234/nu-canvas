@@ -64,6 +64,39 @@ export def list [
   }
 }
 
+export def conclude [
+  enrollment? # An enrollment record or id. Can be passed by pipe.
+  --no-confirm(-y) # Don't show the confirmation prompt
+  --course(-c): any # The course to conclude the enrollment in. If course_id is specified on the enrollment, this is ignored.
+  --task: string # The task to conclude the enrollment with. Accepted values: conclude, delete, inactivate. Defaults to inactivate.
+] {
+  $in
+  | default $enrollment
+  | default $task task
+  | default "inactivate" task
+  | confirm "Conclude these enrollments?" $no_confirm
+  | each {|it|
+    let path = (
+      match $it {
+        {course_id: _} => $"/courses/($it.course_id)/enrollments/($it.id)"
+        {course: _} => $"/courses/(id-of $it.course)/enrollments/($it.id)"
+        {sis_course_id: _} => $"/courses/sis_course_id:($it.sis_course_id)/enrollments/($it.id)"
+        _ => (error make {
+          msg: "cannot conclude this enrollment",
+          label: {
+            text: "must be a course id or a course record",
+            start: (metadata $it).span.start,
+            end: (metadata $it).span.end
+          }
+        })
+      }
+    )
+    let params = {task: $it.task}
+
+    delete $path $params
+  }
+}
+
 # Create one or more enrollments. 
 # Accepts a "course" or "section" column.
 # 
