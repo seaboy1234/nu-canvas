@@ -1,10 +1,10 @@
 # Fetch assignments for a course.
 export def list [
   course? #
-  --include(-i): list
-  --search(-s): string
-  --bucket(-b): string
-  --sort: string
+  --include(-i): list # List of fields to include in the response. Allowed values: submission, assignment_visibility, all_dates, overrides, observed_users, can_edit, score_statistics
+  --search(-s): string # The partial title of the assignments to match and return.
+  --bucket(-b): string # If included, only return certain assignments depending on deu date and submission status. Allowed values: past, overdue, undated, ungraded, unsubmitted, upcoming, future
+  --sort: string # Determines the sort order of returned results. Allowed values: due_at, name, position. Defaults to position.
 ] {
   $in
   | default $course
