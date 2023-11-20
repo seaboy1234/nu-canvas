@@ -1,3 +1,4 @@
+# Retrieve a single course.
 export def main [
   course_id
     # The id of the course to fetch. Accepts SIS ids when prefixed with sis_course_id:
@@ -341,6 +342,7 @@ export def copy [
   --only(-o): list
 ] {
   let template_course = (main (id-of $from))
+  let destination_course = (main (id-of $to))
 
   let migration = {
     migration_type: "course_copy_importer"
@@ -349,9 +351,9 @@ export def copy [
     }
   }
 
-  print $"Copying ($template_course.name) to ($to.name)"
+  print $"Copying ($template_course.name) to ($destination_course.name)"
 
-  let resp = (post $"/courses/(id-of $to)/content_migrations" $migration)
+  let resp = (post $"/courses/(id-of $destination_course)/content_migrations" $migration)
 
   if ($resp | get message -i) != null {
     error make {
