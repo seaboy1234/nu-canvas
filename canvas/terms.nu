@@ -6,6 +6,7 @@ export def list [
 ] {
   $in
   | default $account
+  | default self
   | each {|it|
     paginated-fetch --unwrap enrollment_terms $"/accounts/(id-of $it)/terms" {include: $include, workflow_state: $state}
     | each {|it| try {into datetime start_at} catch {$it} } # These fields can be null, but `into datetime` throws on null
@@ -18,12 +19,19 @@ export def list [
 # Get an enrollment term
 export def main [
   term?
-  --account(-a): int = 1
+  --account(-a): int
 ] {
   $in
   | default $term
+  | default current
   | each {|it|
-    fetch $"/accounts/(id-of $account)/terms/(id-of $it)"
+    let $account_id = (
+      $account
+      | default $it.account_id
+      | default self
+    )
+
+    fetch $"/accounts/(id-of $account_id)/terms/(id-of $it)"
   }
   | maybe-flatten
 }
