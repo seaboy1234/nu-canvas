@@ -42,6 +42,7 @@ export use canvas/tools.nu
 export use canvas/users.nu
 export use canvas/notifications.nu
 export use canvas/groups.nu
+export use canvas/files.nu
 
 # Helpful utilities
 export use canvas/sis.nu
