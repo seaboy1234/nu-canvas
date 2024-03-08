@@ -9,7 +9,21 @@ def enrollments-impl [
       {course_id: _} => "sections"
       {sortable_name: _} => "users"
       {} => ""
-      _ => "courses" 
+      [] => (
+        match $params {
+          {course_id: $course} if $course != null => "courses"
+          {user_id: $user} if $user != null => "users"
+          _ => ""
+        }
+      )
+      null => (
+        match $params {
+          {course_id: $course} if $course != null => "courses"
+          {user_id: $user} if $user != null => "users"
+          _ => ""
+        }
+      )
+      _ => "courses"
     }
   )
 
@@ -24,6 +38,17 @@ def enrollments-impl [
       }
     }
   }
+
+  let thing = (
+    match $thing {
+      null => (match $resource {
+        "courses" => $params.course_id
+        "sections" => $params.section_id
+        "users" => $params.user_id
+      })
+
+      $thing => $thing
+    })
 
   paginated-fetch $"/($resource)/(id-of $thing)/enrollments" $params --spec
   | each {|it|
