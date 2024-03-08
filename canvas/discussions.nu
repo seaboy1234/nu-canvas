@@ -24,7 +24,7 @@ export def list [
   --include(-i): string # Additional information to include in the response. Allowed values: `all_dates`, `sections`, `sections_user_count`, `overrides`
   --order(-o): string # The order to return discussions in. Allowed values: `position`, `recent_activity`, `title`
   --scope(-f): string # The scope of discussions to return. Allowed values: `locked`, `unlocked`, `pinned`, `unpinned`
-  --only-announcements(-a): bool # Only return announcements. If false, only return non-announcements. If null, return both announcements and non-announcements.
+  --only-announcements(-a) # Only return announcements. If false, only return non-announcements. If null, return both announcements and non-announcements.
   --only-unread(-u) # Only return unread discussions. If false, return both read and unread discussions.
 ] {
   $in

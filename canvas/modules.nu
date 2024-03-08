@@ -51,8 +51,8 @@ export def create [
   --name(-n): string # The name of the module.
   --position(-p): int # The position of this module in the course (1-based).
   --unlock-at(-u): string # The date and time the module will be unlocked. Must be in ISO8601 format.
-  --require-sequence(-r): bool # Whether or not the module must be completed sequentially.
-  --publish-final-grade(-g): bool # Whether to publish the final grade for the course when the module is completed.
+  --require-sequence(-r) # Whether or not the module must be completed sequentially.
+  --publish-final-grade(-g) # Whether to publish the final grade for the course when the module is completed.
   --prerequisite-modules(-q): list # The ids of the modules that must be completed before this one is unlocked.
 ] {
   $in
@@ -84,8 +84,8 @@ export def update [
   --name(-n): string
   --position(-p): int # The position of this module in the course (1-based).
   --unlock-at(-u): string # The date and time the module will be unlocked. Must be in ISO8601 format.
-  --require-sequence(-r): bool # Whether or not the module must be completed sequentially.
-  --publish-final-grade(-g): bool # Whether to publish the final grade for the course when the module is completed.
+  --require-sequence(-r) # Whether or not the module must be completed sequentially.
+  --publish-final-grade(-g) # Whether to publish the final grade for the course when the module is completed.
   --prerequisite-modules(-p): list # The ids of the modules that must be completed before this one is unlocked.
 ] {
   $in
@@ -220,7 +220,7 @@ export def create-item [
   --position(-p): int # The position of this item in the module (1-based).
   --indent(-d): int # The number of indentations for this item.
   --page-url(-u): string # The external URL to display for the module item.
-  --new-tab(-n): bool # Whether the external tool opens in a new tab.
+  --new-tab(-n) # Whether the external tool opens in a new tab.
   --completion-requirement(-c): string # The type of requirement to mark the item as done. Allowed values: must_view, must_submit, must_contribute, min_score
   --completion-min-score(-s): int # The minimum score to pass.
 ] {
@@ -271,7 +271,7 @@ export def update-item [
   --position(-p): int # The position of this item in the module (1-based).
   --indent(-d): int # The number of indentations for this item.
   --page-url(-u): string # The external URL to display for the module item.
-  --new-tab(-n): bool # Whether the external tool opens in a new tab.
+  --new-tab(-n) # Whether the external tool opens in a new tab.
   --completion-requirement(-c): string # The type of requirement to mark the item as done. Allowed values: must_view, must_submit, must_contribute, min_score
   --completion-min-score(-s): int # The minimum score to pass.
 ] {
