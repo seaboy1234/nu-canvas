@@ -39,7 +39,7 @@ export def edit [
       | merge $params
     )
 
-    put $"/users/(id-of $user)" $params
+    put $"/users/(id-of $user)" {user: $params}
   }
   | maybe-flatten
 }
