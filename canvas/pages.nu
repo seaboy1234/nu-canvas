@@ -35,3 +35,26 @@ export def list [
     | default "teachers" editing_roles
   }
 }
+
+# Create a page in a course
+# See https://canvas.instructure.com/doc/api/pages.html#method.wiki_pages_api.create
+export def create [
+  --course(-c): any # The course to create the page in
+  --title(-t): string # The title of the page
+  --body(-b): string # The body of the page
+] {
+  $in
+  | default $course
+  | each {|it|
+    let params = (
+      {
+        wiki_page: {
+          title: $title,
+          body: $body
+        }
+      }
+    )
+    
+    post $"/courses/(id-of $it)/pages" $params
+  }
+}
