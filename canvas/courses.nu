@@ -1,7 +1,6 @@
 # Retrieve a single course.
 export def main [
-  course_id
-    # The id of the course to fetch. Accepts SIS ids when prefixed with sis_course_id:
+  --course(-c): any # The id of the course to fetch. Accepts SIS ids when prefixed with `sis_course_id:`. Defaults to the pipeline input.
   --include(-i): list
     # Additional information to include in the result. Allowed values: needs_grading_count, syllabus_body,
     # public_description, total_scores, current_grading_period_scores, term, account, course_progress,
@@ -12,8 +11,12 @@ export def main [
     # this, instead of giving the teacher enrollments, the count of teachers will be given under a
     # teacher_count key.
 ] {
-  fetch $"/courses/(id-of $course_id)" {include: $include, teacher_limit: $max_teachers}
-  | to-datetime created_at end_at start_at 
+  $in
+  | default $course
+  | each {|it|
+    fetch $"/courses/(id-of $it)" {include: $include, teacher_limit: $max_teachers}
+    | to-datetime created_at end_at start_at 
+  }
 }
 
 # Retrieve a paginated list of courses.
@@ -32,7 +35,7 @@ export def list [
   --blueprint-associated: any # If true, only return courses that are associated with a blueprint. If false, return only courses that are not associated with a blueprint. If ommited, return all courses
   --teachers: list # If supplied, only include courses taught by the specified users
   --subaccounts: list # If supplied, only search for courses in the specified subaccounts
-  --term: int # If supplied, only search in the specified enrollment terms
+  --term: any # If supplied, only search in the specified enrollment terms
   --sort: string # The column to sort values by. Allowed values: course_name, sis_course_id, teacher, account_name
   --order: string # The order to sort by. Allowed values: asc, desc
   --search-by: string # The filter to search by. "course" searches for course names, course codes, and SIS IDs. "teacher" searches for teacher names
@@ -68,9 +71,30 @@ export def list [
   $accounts
   | each {|it|
     paginated-fetch $"/accounts/(id-of $it)/courses" $params 
-    | update created_at {|it| $it.created_at | try { into datetime }}
-    | update end_at {|it| $it.created_at | try { into datetime }}
-    | update start_at {|it| $it.created_at | try { into datetime }}
+    | to-datetime created_at end_at start_at
+  }
+}
+
+# Retrive the settings for a course.
+export def settings [
+  --course(-c) # The id of the course to fetch. Defaults to the pipeline input.
+] {
+  $in
+  | default $course
+  | each {|it|
+    fetch $"/courses/(id-of $it)/settings"
+  }
+}
+
+# Update the settings for a course.
+export def "settings update" [
+  --course(-c) # The id of the course to update. Defaults to the pipeline input.
+  --settings(-s): table # The settings to update.
+] {
+  $in
+  | default $course
+  | each {|it|
+    put $"/courses/(id-of $it)/settings" $settings
   }
 }
 
@@ -95,7 +119,7 @@ export def section [
 
 # List the sections in one or more courses.
 export def "list sections" [
-  course? # The course to search in. Defaults to the pipeline input.
+  --course(-c): any # The course to search in. Defaults to the pipeline input.
   --include(-i): list # Additional fields to include in the query. Allowed values: students, avatar_url, enrollments, total_students, passback_status, permissions
 ] {
   $in
@@ -341,8 +365,8 @@ export def copy [
   --to(-t): any
   --only(-o): list
 ] {
-  let template_course = (main (id-of $from))
-  let destination_course = (main (id-of $to))
+  let template_course = (main --course (id-of $from))
+  let destination_course = (main --course (id-of $to))
 
   let migration = {
     migration_type: "course_copy_importer"
@@ -379,7 +403,7 @@ export def delete [
   $in
   | default $course
   | each {|it|
-    main $it
+    main
   }
   | confirm "Are you sure you want to delete these courses?" $no_prompt
   | each {|it|
@@ -394,7 +418,7 @@ export def conclude [
   $in
   | default $course
   | each {|it|
-    main $it
+    main
   }
   | confirm "Are you sure you want to conclude these courses?" $no_prompt
   | each {|it|

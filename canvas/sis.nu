@@ -2,7 +2,7 @@
 export def course [
     sis_id: string
 ] {
-    courses $"sis_course_id:($sis_id)"
+  $"sis_course_id:($sis_id)" | courses
 }
 
 # Get a user by SIS ID.

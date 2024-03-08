@@ -33,7 +33,7 @@ export def course [
     $account
     | default $env.CANVAS_ROOT_ACCOUNT_ID
     | courses list --search $it --term $term
-    | each {|it| courses $it.id}
+    | each {|it| courses }
     | flatten
     | where {|it| [$it.name, $it.sis_course_id] | any {|it|( $it | str downcase) =~ ($search | str downcase)}}
   }
