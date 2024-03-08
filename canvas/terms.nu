@@ -2,7 +2,7 @@
 export def list [
   account?
   --include(-i): list
-  --state(-s): list
+  --state(-s): list # If set, only returns terms that are in the given state. Defaults to ‘active’. Allowed values: active, deleted, all 
 ] {
   $in
   | default $account
