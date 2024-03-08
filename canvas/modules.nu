@@ -46,7 +46,6 @@ export def list [
 # Create and return a new module in a course.
 # Accepts courses in the pipeline.
 export def create [
-  module,
   --course(-c): any
   --name(-n): string # The name of the module.
   --position(-p): int # The position of this module in the course (1-based).
@@ -63,13 +62,14 @@ export def create [
     let prerequisite_module_ids = ($prerequisite_modules | each {|it| id-of $it})
 
     let module = (
-    $module
+      {}
       | default $name name
       | default $position position
       | default $unlock_at unlock_at
       | default $require_sequence require_sequential_progress
       | default $publish_final_grade publish_final_grade
       | default $prerequisite_module_ids prerequisite_module_ids
+      | wrap module
     )
 
     post $"/courses/($course_id)/modules" $module
@@ -79,7 +79,7 @@ export def create [
 # Update and return a module in a course.
 # Accepts courses in the pipeline.
 export def update [
-  module?,
+  module,
   --course(-c): any
   --name(-n): string
   --position(-p): int # The position of this module in the course (1-based).
@@ -100,13 +100,14 @@ export def update [
     let prerequisite_module_ids = ($prerequisite_modules | each {|it| id-of $it})
 
     let module = (
-    $module
+      $module
       | default $name name
       | default $position position
       | default $unlock_at unlock_at
       | default $require_sequence require_sequential_progress
       | default $publish_final_grade publish_final_grade
       | default $prerequisite_module_ids prerequisite_module_ids
+      | wrap module
     )
 
     put $"/courses/($course_id)/modules/(id-of $module)" $module
@@ -211,7 +212,7 @@ export def get-item [
 # Create and return a new module item in a module.
 # Accepts modules in the pipeline.
 export def create-item [
-  item,
+  item?,
   --module(-m): any
   --course(-c): any
   --title(-t): string # The title of the module item.
@@ -219,7 +220,8 @@ export def create-item [
   --content-id(-i): any # The id of the content to link to.
   --position(-p): int # The position of this item in the module (1-based).
   --indent(-d): int # The number of indentations for this item.
-  --page-url(-u): string # The external URL to display for the module item.
+  --page-url(-u): string # Suffix for the linked wiki page (e.g. ‘front-page’). Required for ‘Page’ type.
+  --external-url(-e): string # The external URL to display for the module item. Required for ‘ExternalUrl’ and ‘ExternalTool’ types.
   --new-tab(-n) # Whether the external tool opens in a new tab.
   --completion-requirement(-c): string # The type of requirement to mark the item as done. Allowed values: must_view, must_submit, must_contribute, min_score
   --completion-min-score(-s): int # The minimum score to pass.
@@ -229,10 +231,10 @@ export def create-item [
   | default []
   | each {|mod|
     let course_id = (
-      $mod
-      | default {}
-      | default course_id (id-of $course)
-      | get course_id
+      match $mod {
+        {course_id: $course_id} => $course_id
+        _ => (id-of $course)
+      }
     )
 
     if $course_id == null {
@@ -242,13 +244,14 @@ export def create-item [
     }
 
     let item = (
-    $item
+      {}
       | default $title title
       | default $type type
       | default $content_id content_id
       | default $position position
       | default $indent indent
       | default $page_url page_url
+      | default $external_url external_url
       | default $new_tab new_tab
       | default $completion_requirement completion_requirement.type
       | default $completion_min_score completion_requirement.min_score
