@@ -9,8 +9,8 @@ export def history [
   | each {|it|
     let params = (
       {}
-      | add $assignment assignment
-      | add $student user
+      | add $assignment assignment_id
+      | add $student user_id
       | add $ascending ascending
     )
 
@@ -21,7 +21,7 @@ export def history [
       }
     )
 
-    paginated-fetch $"/courses/(id-of $course)/gradebook_history/feed" $params
+    paginated-fetch $"/courses/(id-of $course)/gradebook_history/feed" $params --spec
   }
   | flatten --all
 }
